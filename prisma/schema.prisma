@@ -18,4 +18,14 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime
+  Notes     Note[]
+}
+
+model Note {
+  id       String   @id
+  title     String
+  description String?
+  createdAt DateTime
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 }
