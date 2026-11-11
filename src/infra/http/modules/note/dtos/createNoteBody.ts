@@ -1,11 +1,13 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional } from 'class-validator';
+import { IsNotEmptyCustom } from '../../../classValidator/decorators/IsNotEmptyCustom.js';
+import { IsStringCustom } from '../../../classValidator/decorators/IsStringCustom.js';
 
 export class CreateNoteBody {
-  @IsString()
-  @IsNotEmpty()
+  @IsStringCustom()
+  @IsNotEmptyCustom()
   title: string;
 
-  @IsString()
+  @IsStringCustom()
   @IsOptional()
   description?: string;
 }

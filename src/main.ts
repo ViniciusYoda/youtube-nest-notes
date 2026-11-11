@@ -1,12 +1,22 @@
-import 'dotenv/config';
-import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
+import { IncorrectValuesException } from './exceptions/IncorrectValuesException.js';
+import { mapperClassValidationErrorToAppException } from './utils/mappers.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3000);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory(errors: ValidationError[]) {
+        throw new IncorrectValuesException({
+          fields: mapperClassValidationErrorToAppException(errors),
+        });
+      },
+    }),
+  );
+  await app.listen(3002);
 }
 
 bootstrap().catch((error: unknown) => {

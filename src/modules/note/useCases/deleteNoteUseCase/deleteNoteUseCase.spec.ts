@@ -1,8 +1,9 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { makeUser } from '../../../user/factories/userFactory.js';
-import { makeNote } from '../../factories/noteFactory.js';
 import { NoteRepositoryInMemory } from '../../repositories/noteRepositoryInMemory.js';
 import { DeleteNoteUseCase } from './deleteNoteUseCase.js';
+import { makeNote } from '../../factories/noteFactory.js';
+import { NoteNotFoundException } from '../../exceptions/NoteNotFoundException.js';
+import { NoteWithoutPermissionException } from '../../exceptions/NoteWithoutPermissionException.js';
 
 let noteRepositoryInMemory: NoteRepositoryInMemory;
 let deleteNoteUseCase: DeleteNoteUseCase;
@@ -30,12 +31,12 @@ describe('Delete Note', () => {
   });
 
   it('Should be able to throw error when not found note', async () => {
-    await expect(
-      deleteNoteUseCase.execute({
+    await expect(async () => {
+      await deleteNoteUseCase.execute({
         noteId: 'fakeId',
         userId: 'fakeId',
-      }),
-    ).rejects.toThrowError(NotFoundException);
+      });
+    }).rejects.toThrowError(NoteNotFoundException);
   });
 
   it('Should be able to throw error when note has another user', async () => {
@@ -43,11 +44,11 @@ describe('Delete Note', () => {
 
     noteRepositoryInMemory.notes = [note];
 
-    await expect(
-      deleteNoteUseCase.execute({
+    await expect(async () => {
+      await deleteNoteUseCase.execute({
         noteId: note.id,
         userId: 'fakeId',
-      }),
-    ).rejects.toThrowError(UnauthorizedException);
+      });
+    }).rejects.toThrowError(NoteWithoutPermissionException);
   });
 });

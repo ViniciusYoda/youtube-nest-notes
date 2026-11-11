@@ -1,7 +1,8 @@
 import { compare } from 'bcrypt';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { UserRepositoryInMemory } from '../../repositories/UserRepositoryInMemory.js';
 import { CreateUserUseCase } from './createUserUseCase.js';
+import { makeUser } from '../../factories/userFactory.js';
+import { UserWithSameEmailException } from '../../exceptions/UserWithSameEmailException.js';
 
 let createUserUseCase: CreateUserUseCase;
 let userRepositoryInMemory: UserRepositoryInMemory;
@@ -24,7 +25,7 @@ describe('Create User', () => {
     expect(userRepositoryInMemory.users).toEqual([user]);
   });
 
-  it('Should be able to create user with a hashed password', async () => {
+  it('Should be able to create user with password encrypted', async () => {
     const userPasswordWithoutEncryption = '123123';
 
     const user = await createUserUseCase.execute({
@@ -33,13 +34,26 @@ describe('Create User', () => {
       password: userPasswordWithoutEncryption,
     });
 
-    expect(user.password).not.toBe(userPasswordWithoutEncryption);
-
-    const passwordMatches = await compare(
+    const userHasPasswordEncrypted = await compare(
       userPasswordWithoutEncryption,
       user.password,
     );
 
-    expect(passwordMatches).toBe(true);
+    expect(userHasPasswordEncrypted).toBeTruthy();
+  });
+
+  it('Should be able to thorw error when create user with already exist email', async () => {
+    const user = makeUser({});
+
+    userRepositoryInMemory.users = [user];
+
+    await expect(
+      async () =>
+        await createUserUseCase.execute({
+          email: user.email,
+          name: 'vitor',
+          password: '123123',
+        }),
+    ).rejects.toThrowError(UserWithSameEmailException);
   });
 });

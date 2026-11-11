@@ -1,8 +1,8 @@
-import { hash } from 'bcrypt';
-import { UnauthorizedException } from '@nestjs/common';
-import { User } from '../../../user/entities/User.js';
-import { UserRepositoryInMemory } from '../../../user/repositories/UserRepositoryInMemory.js';
 import { ValidateUserUseCase } from './validateUserUseCase.js';
+import { UserRepositoryInMemory } from '../../../user/repositories/UserRepositoryInMemory.js';
+import { hash } from 'bcrypt';
+import { makeUser } from '../../../user/factories/userFactory.js';
+import { AuthValuesIncorrectException } from '../../exceptions/AuthValuesIncorrectException.js';
 
 let validateUserUseCase: ValidateUserUseCase;
 let userRepositoryInMemory: UserRepositoryInMemory;
@@ -16,9 +16,7 @@ describe('Validate User', () => {
   it('Should be able to return user when credentials are correct', async () => {
     const userPasswordWithoutEncryption = '123123';
 
-    const user = new User({
-      email: 'user@email.com',
-      name: 'User',
+    const user = makeUser({
       password: await hash(userPasswordWithoutEncryption, 10),
     });
 
@@ -35,26 +33,24 @@ describe('Validate User', () => {
   it('Should be able to throw error when credentials incorrect', async () => {
     const userPasswordWithoutEncryption = '123123';
 
-    const user = new User({
-      email: 'user@email.com',
-      name: 'User',
+    const user = makeUser({
       password: await hash(userPasswordWithoutEncryption, 10),
     });
 
     userRepositoryInMemory.users = [user];
 
-    await expect(
-      validateUserUseCase.execute({
+    await expect(async () => {
+      await validateUserUseCase.execute({
         email: 'incorrect@gmail.com',
         password: userPasswordWithoutEncryption,
-      }),
-    ).rejects.toThrow(UnauthorizedException);
+      });
+    }).rejects.toThrow(AuthValuesIncorrectException);
 
-    await expect(
-      validateUserUseCase.execute({
+    await expect(async () => {
+      await validateUserUseCase.execute({
         email: user.email,
         password: 'incorrect password',
-      }),
-    ).rejects.toThrow(UnauthorizedException);
+      });
+    }).rejects.toThrow(AuthValuesIncorrectException);
   });
 });

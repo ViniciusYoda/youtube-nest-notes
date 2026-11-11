@@ -1,126 +1,277 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# YouTube Nest Notes
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API de anotações pessoais construída com NestJS e TypeScript. Possui cadastro de usuários, autenticação por JWT e operações de criação, consulta, edição e exclusão de anotações.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Cada anotação pertence a um usuário. A listagem retorna apenas as anotações do usuário autenticado; as operações individuais verificam a propriedade da anotação.
 
-## Description
+## Tecnologias
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- NestJS 12 com adaptador Express.
+- TypeScript 6 e módulos ESM, com imports relativos terminados em `.js`.
+- Prisma 7 com SQLite e o adaptador `better-sqlite3`.
+- Passport com estratégias local e JWT.
+- bcrypt para hash de senhas.
+- class-validator e class-transformer para validação dos DTOs.
+- Vitest para testes e Oxlint para análise estática.
 
-## Project setup
+## Executar localmente
+
+Use Node.js compatível com as dependências instaladas, como a versão 24, e npm.
 
 ```bash
-$ yarn install
+npm install
+cp .env.example .env
 ```
 
-## Compile and run the project
+Preencha as variáveis do `.env`:
+
+```dotenv
+DATABASE_URL=file:./prisma/dev.db
+JWT_SECRET=substitua-por-um-segredo-aleatorio
+JWT_EXPIRE=3600
+```
+
+| Variável | Finalidade |
+| --- | --- |
+| `DATABASE_URL` | Caminho do banco SQLite, utilizado pelo Prisma e pela aplicação. |
+| `JWT_SECRET` | Segredo utilizado para assinar e verificar os tokens. |
+| `JWT_EXPIRE` | Validade do token em segundos; quando definida, deve ser um inteiro positivo. |
+
+O arquivo de configuração do Prisma tem o nome `prisma7.config.ts`, por isso os comandos abaixo informam seu caminho explicitamente.
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+npx prisma generate --config prisma7.config.ts
+npx prisma migrate deploy --config prisma7.config.ts
 ```
 
-## Run tests
+Inicie o servidor carregando as variáveis de ambiente explicitamente:
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+NODE_OPTIONS='--env-file=.env' npm run start:dev
 ```
 
-## Deployment
+A API fica disponível em `http://localhost:3002`. A porta está definida em `src/main.ts`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Para compilar e executar o resultado:
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+npm run build
+node --env-file=.env dist/main.js
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+O comando de build também gera o Prisma Client por meio do script `prebuild`.
 
-## Observability
+## Estrutura do projeto
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+```text
+src/
+├── main.ts                 # Inicialização e validação global
+├── app.module.ts           # Módulo principal e guard JWT global
+├── modules/
+│   ├── user/               # Entidade, cadastro e contrato de repositório
+│   ├── auth/               # Login, estratégias Passport e emissão de JWT
+│   └── note/               # Entidade e casos de uso das anotações
+├── infra/
+│   ├── http/               # Controllers, módulos HTTP, DTOs e validação
+│   └── database/           # Prisma, mapeadores e repositórios concretos
+├── exceptions/             # Exceções compartilhadas e formato de erro
+├── utils/                  # Utilitários e mapeamento de erros de validação
+└── generated/prisma/       # Cliente gerado pelo Prisma
+prisma/
+├── schema.prisma           # Modelos do banco
+└── migrations/             # Histórico de alterações do banco
+```
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+Os arquivos `*.spec.ts` ficam próximos dos casos de uso. Os repositórios em memória permitem testar as regras sem acessar o SQLite.
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+## Como o NestJS trabalha neste projeto
 
-This project is already instrumented. To connect it, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
+O `main.ts` chama `NestFactory.create(AppModule)`. O Nest carrega os módulos, instancia os providers e conecta suas dependências. Em seguida, registra a validação global e inicia o servidor.
+
+Os módulos agrupam responsabilidades:
+
+- `AppModule`: importa os módulos da aplicação e registra o `JwtAuthGuard` como `APP_GUARD`.
+- `UserModule`: registra o controller de usuários e o caso de uso de cadastro.
+- `AuthModule`: configura JWT, estratégias de autenticação e middleware de validação do login.
+- `NoteModule`: registra o controller e os casos de uso de anotações.
+- `DatabaseModule`: conecta os contratos de repositório às implementações Prisma.
+
+### Injeção de dependências
+
+Um constructor declara o que a classe precisa receber:
+
+```ts
+constructor(private userRepository: UserRepository) {}
+```
+
+O `DatabaseModule` informa qual implementação o Nest deve fornecer:
+
+```ts
+{
+  provide: UserRepository,
+  useClass: PrismaUserRepository,
+}
+```
+
+Com isso, o caso de uso trabalha com o contrato `UserRepository`. A implementação concreta recebe o `PrismaService` e executa as operações no banco.
+
+### Fluxo de uma requisição
+
+```mermaid
+flowchart TD
+    A[Requisição HTTP] --> B[Middleware, quando configurado]
+    B --> C[Guards de autenticação]
+    C --> D[ValidationPipe e DTO]
+    D --> E[Controller]
+    E --> F[Caso de uso]
+    F --> G[Repositório Prisma]
+    G --> H[(SQLite)]
+    H --> I[Retorno ao controller]
+    I --> J[ViewModel, quando utilizado]
+    J --> K[Resposta JSON]
+```
+
+Os decorators `@Controller`, `@Get`, `@Post`, `@Put` e `@Delete` registram as rotas. `@Body`, `@Param` e `@Query` extraem dados da requisição; `@Request` permite acessar o usuário autenticado.
+
+O controller encaminha os dados ao caso de uso. As regras, como impedir e-mails repetidos e verificar o dono de uma anotação, ficam nos casos de uso. Os ViewModels selecionam os campos enviados na resposta, evitando expor o hash da senha do usuário.
+
+## Autenticação
+
+O login utiliza `LocalAuthGuard` e `LocalStrategy`. A estratégia chama `ValidateUserUseCase`, que busca o usuário pelo e-mail e compara a senha com o hash usando bcrypt. O `SignInUseCase` emite o JWT.
+
+Nas rotas protegidas, envie o token no cabeçalho:
+
+```http
+Authorization: Bearer SEU_TOKEN
+```
+
+O `JwtAuthGuard` verifica o token por meio da estratégia JWT. A identidade extraída fica disponível em `request.user`; os controllers de anotações usam `request.user.id` para identificar o proprietário.
+
+**Estado atual do cadastro:** apenas `/signIn` está marcada com `@Public()`. Portanto, `POST /users` também exige JWT. Um banco vazio não permite realizar o fluxo inicial de cadastro e login somente pelas rotas atuais. Para permitir cadastro aberto, é necessário marcar essa rota como pública; esta documentação descreve o comportamento existente.
+
+## Rotas
+
+| Método | Rota | JWT | Operação |
+| --- | --- | --- | --- |
+| POST | `/users` | Sim | Cadastrar usuário. |
+| POST | `/signIn` | Não | Autenticar e retornar `access_token`. |
+| POST | `/notes` | Sim | Criar anotação. |
+| GET | `/notes` | Sim | Listar anotações do usuário. |
+| GET | `/notes/:id` | Sim | Consultar uma anotação. |
+| PUT | `/notes/:id` | Sim | Editar uma anotação. |
+| DELETE | `/notes/:id` | Sim | Excluir uma anotação. |
+
+### Cadastro
+
+Corpo de `POST /users`:
+
+```json
+{
+  "name": "Vitor",
+  "email": "vitor@example.com",
+  "password": "123456"
+}
+```
+
+O nome deve ser uma string não vazia, o e-mail deve ser válido e a senha deve ter pelo menos seis caracteres. O cadastro rejeita e-mails já existentes e armazena a senha como hash bcrypt. A resposta contém `id`, `name`, `email` e `createdAt`.
+
+### Login
+
+Com um usuário já cadastrado:
 
 ```bash
-$ npx @nestjs/observe link
+curl -X POST http://localhost:3002/signIn \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"vitor@example.com","password":"123456"}'
 ```
 
-It writes the app key and secret into `.env` and makes every `nest start` script (`start`, `start:dev`, `start:debug`) load it. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
+Resposta:
 
-Or do it by hand: create an application and an API key at [observe.nestjs.com](https://observe.nestjs.com), and set the pair as `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment the app runs in.
+```json
+{
+  "access_token": "TOKEN_JWT"
+}
+```
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+O corpo do login é validado pelo `SignInDTOValidateMiddleware` antes da autenticação local.
 
-## Resources
+### Criar e editar anotações
 
-Check out a few resources that may come in handy when working with NestJS:
+Corpo de `POST /notes` ou `PUT /notes/:id`:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```json
+{
+  "title": "Estudar NestJS",
+  "description": "Revisar módulos e injeção de dependências"
+}
+```
 
-## Support
+O título é obrigatório e não pode ser vazio. A descrição é opcional. Na edição, omitir a descrição define seu valor como `null`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+curl -X POST http://localhost:3002/notes \
+  -H 'Authorization: Bearer SEU_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"Estudar NestJS","description":"Revisar módulos"}'
+```
 
-## Stay in touch
+A criação e a consulta individual retornam `id`, `title`, `description` e `createdAt`.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Listar anotações
 
-## License
+```bash
+curl 'http://localhost:3002/notes?page=1&perPage=20' \
+  -H 'Authorization: Bearer SEU_TOKEN'
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+A resposta é um array de anotações. Os valores padrão são página `1` e `20` itens por página. Não há metadados de total na resposta, e a implementação atual não valida limites positivos ou um máximo de itens para esses parâmetros.
+
+## Modelo de dados
+
+| Entidade | Campos |
+| --- | --- |
+| `User` | `id`, `name`, `email` único, `password` e `createdAt`. |
+| `Note` | `id`, `title`, `description` opcional, `createdAt` e `userId`. |
+
+As entidades geram UUIDs e datas de criação quando esses valores não são fornecidos. Um usuário pode possuir várias anotações. A relação no banco utiliza exclusão em cascata: excluir um usuário no banco também exclui suas anotações. Não existe rota de exclusão de usuário no projeto atual.
+
+## Validação e erros
+
+O `ValidationPipe` global utiliza os decorators dos DTOs. As mensagens personalizadas ficam em `src/infra/http/classValidator`. O utilitário `mapperClassValidationErrorToAppException` seleciona a primeira mensagem de cada campo.
+
+Exemplo de resposta de validação:
+
+```json
+{
+  "message": "Dados inválidos",
+  "fields": {
+    "email": "O Campo email deve ser um email"
+  }
+}
+```
+
+As exceções da aplicação estendem `AppException`, que herda de `HttpException`. O Nest converte essas exceções em respostas HTTP.
+
+| Situação | Status |
+| --- | --- |
+| Dados inválidos | `400` |
+| E-mail ou senha incorretos | `401` |
+| Token inválido ou expirado | `401` |
+| Anotação de outro usuário | `401`, conforme implementação atual |
+| Anotação não encontrada | `404` |
+| E-mail já cadastrado | `409` |
+
+## Testes e verificações
+
+```bash
+npm test              # Testes unitários com Vitest
+npm run test:watch    # Testes em modo de observação
+npm run test:cov      # Cobertura de testes
+npm run lint         # Análise estática com Oxlint
+npx tsc --noEmit      # Verificação de tipos
+npm run build        # Geração do Prisma Client e compilação
+```
+
+Os testes cobrem cadastro, autenticação e operações de anotações usando repositórios em memória.
+
+O comando `npm run test:e2e` utiliza `vitest.config.e2e.ts`. O teste existente ainda é o exemplo inicial que espera `GET /` com `Hello World!`; ele precisa ser atualizado para as rotas e a autenticação reais antes de servir como validação ponta a ponta da API.
