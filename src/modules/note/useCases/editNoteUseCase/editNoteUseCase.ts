@@ -1,5 +1,9 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
-import type { NoteRepository } from '../../repositories/noteRepository.js';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { NoteRepository } from '../../repositories/noteRepository.js';
 
 interface EditNoteRequest {
   title: string;
@@ -8,6 +12,7 @@ interface EditNoteRequest {
   userId: string;
 }
 
+@Injectable()
 export class EditNoteUseCase {
   constructor(private noteRepository: NoteRepository) {}
 

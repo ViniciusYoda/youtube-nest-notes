@@ -1,5 +1,5 @@
-import { NoteRepositoryInMemory } from '../../repositories/noteRepositoryInMemory';
-import { CreateNoteUseCase } from './createNoteUseCase';
+import { NoteRepositoryInMemory } from '../../repositories/noteRepositoryInMemory.js';
+import { CreateNoteUseCase } from './createNoteUseCase.js';
 
 let noteRepositoryInMemory: NoteRepositoryInMemory;
 let createNoteUseCase: CreateNoteUseCase;

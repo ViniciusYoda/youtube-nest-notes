@@ -1,11 +1,16 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
-import type { NoteRepository } from '../../repositories/noteRepository.js';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { NoteRepository } from '../../repositories/noteRepository.js';
 
 interface GetNoteRequest {
   noteId: string;
   userId: string;
 }
 
+@Injectable()
 export class GetNoteUseCase {
   constructor(private noteRepository: NoteRepository) {}
 
