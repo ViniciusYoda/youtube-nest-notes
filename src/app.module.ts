@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './infra/http/modules/user/user.module';
-import { DatabaseModule } from './infra/database/database.module';
-import { AuthModule } from './infra/http/modules/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './infra/http/modules/auth/guards/jwtAuth.guard';
+import { AuthModule } from './infra/http/modules/auth/auth.module.js';
+import { JwtAuthGuard } from './infra/http/modules/auth/guards/jwtAuth.guard.js';
+import { DatabaseModule } from './infra/database/database.module.js';
+import { UserModule } from './infra/http/modules/user/user.module.js';
 
 @Module({
   imports: [DatabaseModule, UserModule, AuthModule],
@@ -11,7 +11,7 @@ import { JwtAuthGuard } from './infra/http/modules/auth/guards/jwtAuth.guard';
   providers: [
     {
       provide: APP_GUARD,
-      userClass: JwtAuthGuard,
+      useClass: JwtAuthGuard,
     }
   ],
 })

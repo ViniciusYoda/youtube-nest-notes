@@ -1,7 +1,7 @@
-import { makeUser } from 'src/modules/user/factories/userFactory';
-import { SignInUseCase } from './signInUseCase';
+import { User } from '../../../user/entities/User.js';
+import { SignInUseCase } from './signInUseCase.js';
 import { JwtService } from '@nestjs/jwt';
-import { UserPayload } from '../../models/UserPayload';
+import type { UserPayload } from '../../models/UserPayload.js';
 
 let signInUseCase: SignInUseCase;
 let jwtService: JwtService;
@@ -13,7 +13,11 @@ describe('Sign in', () => {
   });
 
   it('Should be able to create valid access_token', async () => {
-    const user = makeUser({});
+    const user = new User({
+      email: 'user@email.com',
+      name: 'User',
+      password: 'password',
+    });
 
     const token = await signInUseCase.execute({
       user,

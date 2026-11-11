@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './user.controller';
-import { CreateUserUseCase } from 'src/modules/user/useCases/createUserUseCase/createUserUseCase';
-import { DatabaseModule } from 'src/infra/database/database.module';
+import { CreateUserUseCase } from '../../../../modules/user/useCases/createUserUseCase/createUserUseCase.js';
+import { DatabaseModule } from '../../../database/database.module.js';
+import { UserController } from './user.controller.js';
 
 @Module({
     imports: [DatabaseModule],

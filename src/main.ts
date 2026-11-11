@@ -1,6 +1,7 @@
+import 'dotenv/config';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -8,4 +9,11 @@ async function bootstrap() {
   await app.listen(3000);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  const logger = new Logger('Bootstrap');
+  logger.error(
+    'Failed to start the application',
+    error instanceof Error ? error.stack : String(error),
+  );
+  process.exitCode = 1;
+});

@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { CreateUserUseCase } from '../../../../modules/user/useCases/createUserUseCase/createUserUseCase';
-import { CreateUserBody } from './dtos/createUserBody';
-import { UserViewModel } from './viewModel/userViewModel';
+import { CreateUserUseCase } from '../../../../modules/user/useCases/createUserUseCase/createUserUseCase.js';
+import { CreateUserBody } from './dtos/createUserBody.js';
+import { UserViewModel } from './viewModel/userViewModel.js';
 
 @Controller('users')
 export class UserController {
@@ -17,6 +17,6 @@ export class UserController {
             password,
         });
 
-        return UserViewModel.toHTTP(user);
+        return UserViewModel.toHttp(user);
     }
 }

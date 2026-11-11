@@ -1,12 +1,14 @@
-import { User } from 'src/modules/user/entities/User';
-import { UserRepository } from 'src/modules/user/repositories/UserRepository';
-import { PrismaService } from '../prisma.service';
-import { PrismaUserMapper } from '../mappers/PrismaUserMapper';
 import { Injectable } from '@nestjs/common';
+import { User } from '../../../../modules/user/entities/User.js';
+import { UserRepository } from '../../../../modules/user/repositories/UserRepository.js';
+import { PrismaUserMapper } from '../mappers/PrismaUserMapper.js';
+import { PrismaService } from '../prisma.service.js';
 
 @Injectable()
-export class PrismaUJserRepository implements UserRepository {
-    constructor(private prisma: PrismaService) {}
+export class PrismaUserRepository extends UserRepository {
+    constructor(private readonly prisma: PrismaService) {
+        super();
+    }
 
     async create(user: User): Promise<void> {
         const userRaw = PrismaUserMapper.toPrisma(user);

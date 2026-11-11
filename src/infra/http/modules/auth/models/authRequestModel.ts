@@ -1,6 +1,6 @@
-import { Request } from 'express';
-import { User } from 'src/modules/user/entities/User';
+import type { Request } from 'express';
+import type { User } from '../../../../../modules/user/entities/User.js';
 
-export class AuthRequestModel extends Request {
+export interface AuthRequestModel extends Request {
   user: User;
 }

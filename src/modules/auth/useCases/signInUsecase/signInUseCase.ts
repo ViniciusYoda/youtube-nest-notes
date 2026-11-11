@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'src/modules/user/entities/User';
-import { UserPayload } from '../../models/UserPayload';
 import { JwtService } from '@nestjs/jwt';
+import type { User } from '../../../user/entities/User.js';
+import type { UserPayload } from '../../models/UserPayload.js';
 
 interface SignInRequest {
     user: User;

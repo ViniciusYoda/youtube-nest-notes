@@ -1,16 +1,15 @@
 import {
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthRequestModel } from './models/authRequestModel';
-import { SignInUseCase } from '../../../../modules/auth/useCases/signInUsecase/signInUseCase';
-import { LocalAuthGuard } from './guards/localAuth.guard';
-import { Public } from './decorators/isPublic';
+import { SignInUseCase } from '../../../../modules/auth/useCases/signInUsecase/signInUseCase.js';
+import { Public } from './decorators/isPublic.js';
+import { LocalAuthGuard } from './guards/localAuth.guard.js';
+import type { AuthRequestModel } from './models/authRequestModel.js';
 
 @Controller()
 export class AuthController {

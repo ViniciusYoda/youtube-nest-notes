@@ -3,8 +3,8 @@ import {
   Injectable,
   NestMiddleware,
 } from '@nestjs/common';
-import { NextFunction, Request, Response } from 'express';
-import { SignInBody } from '../dtos/SignInBody';
+import type { NextFunction, Request, Response } from 'express';
+import { SignInBody } from '../dtos/SignInBody.js';
 import { validate } from 'class-validator';
 
 @Injectable()
